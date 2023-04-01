@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   datatools-server:
-    build: ./
+    image: datatools-server:dev
+          #    build: ./
+    restart: always
     ports:
       - "4000:4000"
     volumes:
@@ -9,18 +11,34 @@ services:
         source: ./configurations/default/
         target: /config
       - type: bind
-        source: ~/.aws
+        source: /opt/.aws
         target: /root/.aws
+      - '/opt/datatools-data/gtfs:/gtfs'
     depends_on:
       - mongo
       - postgres
   mongo:
     image: mongo
+    volumes:
+      - '/opt/mongodb/data/db:/data/db'
     restart: always
+    #  datatools-ui:
+    #    image: datatools-ui:5.0.0
+    #          #    volumes:
+    #          #      - '/opt/mongodb/data/db:/data/db'
+    #    ports:
+    #      - "9966:9966"
+    #    restart: always
   postgres:
+    volumes:
+      - datatools-pg-data:/var/lib/postgresql/data
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_USER: root
-      POSTGRES_DB: dmtest
+      POSTGRES_DB: datatools
     image: postgres
     restart: always
+
+volumes:
+  datatools-pg-data:
+    external: true
